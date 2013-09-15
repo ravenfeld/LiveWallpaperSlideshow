@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Application Name -->
+    <string name="app_name">LiveWallpaper Slideshow</string>
+
+    <!-- Name in Live Wallpaper Picker list -->
+    <string name="lwp_name">LiveWallpaper Slideshow</string>
+
+    <!-- Description in Live Wallpaper Picker list -->
+    <string name="lwp_desc">LiveWallpaper Slideshow, select a image and define as livewallpaper</string>
+
+    <!-- Author -->
+    <string name="lwp_author">Ravenfeld</string>
+    <string name="picker_toast_prefix">Choose \"</string>
+    <string name="picker_toast_suffix">\" from the list</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="chooser_label">Select a file</string>
+    <string name="file">File or Folder source</string>
+    <string name="file_summary">File</string>
+    <string name="folder_summary">Folder</string>
+    <string name="renderer_mode_list_summary">Mode </string>
+    <string name="renderer_mode_list">Renderer mode</string>
+    <string name="classic">Classic</string>
+    <string name="letter_boxed">Letter_boxed</string>
+    <string name="stretched">Stretched</string>
+
+</resources>
