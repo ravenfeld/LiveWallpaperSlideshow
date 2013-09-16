@@ -11,5 +11,23 @@
         <item>letter_boxed</item>
         <item>stretched</item>
     </string-array>
+    <string-array name="timeArray">
+        <item>@string/time_5_seconds</item>
+        <item>@string/time_1_minute</item>
+        <item>@string/time_5_minutes</item>
+        <item>@string/time_15_minutes</item>
+        <item>@string/time_30_minutes</item>
+        <item>@string/time_1_hour</item>
+        <item>@string/time_1_day</item>
+    </string-array>
+    <string-array name="timeValues">
+        <item>time_5_seconds</item>
+        <item>time_1_minute</item>
+        <item>time_5_minutes</item>
+        <item>time_15_minutes</item>
+        <item>time_30_minutes</item>
+        <item>time_1_hour</item>
+        <item>time_1_day</item>
+    </string-array>
 
 </resources>

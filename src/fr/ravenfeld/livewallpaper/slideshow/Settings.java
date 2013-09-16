@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -24,10 +25,14 @@ public class Settings extends PreferenceActivity implements SharedPreferences.On
 		INCLUDE_EXTENSIONS_LIST.add(".jpg");
 		INCLUDE_EXTENSIONS_LIST.add(".png");
 		INCLUDE_EXTENSIONS_LIST.add(".gif");
+		INCLUDE_EXTENSIONS_LIST.add(".JPG");
+		INCLUDE_EXTENSIONS_LIST.add(".PNG");
+		INCLUDE_EXTENSIONS_LIST.add(".GIF");
 	}
 	private Preference mFile;
 	private ListPreference mRendererMode;
-
+	private ListPreference mTimeChange;
+	private CheckBoxPreference mRandomFile;
 	@Override
 	protected void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
@@ -37,9 +42,12 @@ public class Settings extends PreferenceActivity implements SharedPreferences.On
 		getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 		mFile = findPreference("file");
 		mRendererMode = (ListPreference) findPreference("rendererMode");
+		mTimeChange = (ListPreference) findPreference("time");
+		mRandomFile = (CheckBoxPreference) findPreference("random_file");
 
 		fileText();
 		rendererText();
+		timeText();
 
 		mFile.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 
@@ -72,6 +80,7 @@ public class Settings extends PreferenceActivity implements SharedPreferences.On
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		fileText();
 		rendererText();
+		timeText();
 	}
 
 	@SuppressWarnings("unused")
@@ -89,11 +98,19 @@ public class Settings extends PreferenceActivity implements SharedPreferences.On
 				String[] uri_split = uri.split("/");
 				mFile.setSummary(getString(R.string.file_summary) + ": "
 					+ uri_split[uri_split.length - 1]);
+				mRandomFile.setEnabled(false);
+				mTimeChange.setEnabled(false);
 			} else if (file.isDirectory()) {
 				String[] uri_split = uri.split("///");
 				mFile.setSummary(getString(R.string.folder_summary) + ": "
 						+ uri_split[uri_split.length - 1]);
+				mRandomFile.setEnabled(true);
+				mTimeChange.setEnabled(true);
 			}
+		} else {
+			mFile.setSummary(getString(R.string.folder_summary) + ": ");
+			mRandomFile.setEnabled(false);
+			mTimeChange.setEnabled(false);
 		}
 	}
 
@@ -109,6 +126,30 @@ public class Settings extends PreferenceActivity implements SharedPreferences.On
 		}
 
 		mRendererMode.setSummary(getString(R.string.renderer_mode_list_summary)
+				+ ": " + string);
+	}
+
+	private void timeText() {
+		String stringValue = mTimeChange.getValue();
+		String string = "";
+
+		if (stringValue.equalsIgnoreCase("time_5_seconds")) {
+			string = getString(R.string.time_5_seconds);
+		} else if (stringValue.equalsIgnoreCase("time_1_minute")) {
+			string = getString(R.string.time_1_minute);
+		} else if (stringValue.equalsIgnoreCase("time_5_minutes")) {
+			string = getString(R.string.time_5_minutes);
+		} else if (stringValue.equalsIgnoreCase("time_15_minutes")) {
+			string = getString(R.string.time_15_minutes);
+		} else if (stringValue.equalsIgnoreCase("time_30_minutes")) {
+			string = getString(R.string.time_30_minutes);
+		} else if (stringValue.equalsIgnoreCase("time_1_hour")) {
+			string = getString(R.string.time_1_hour);
+		} else if (stringValue.equalsIgnoreCase("time_1_day")) {
+			string = getString(R.string.time_1_day);
+		}
+
+		mTimeChange.setSummary(getString(R.string.summary_time_list)
 				+ ": " + string);
 	}
 

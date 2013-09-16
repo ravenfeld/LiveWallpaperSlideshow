@@ -17,8 +17,8 @@
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
-    <string name="chooser_label">Select a file</string>
-    <string name="file">File or Folder source</string>
+    <string name="chooser_label">Select a image</string>
+    <string name="file">Image or Folder source</string>
     <string name="file_summary">File</string>
     <string name="folder_summary">Folder</string>
     <string name="renderer_mode_list_summary">Mode </string>
@@ -26,5 +26,17 @@
     <string name="classic">Classic</string>
     <string name="letter_boxed">Letter_boxed</string>
     <string name="stretched">Stretched</string>
+    <string name="random_file">Random image</string>
+    <string name="random_file_enabled">The image is loaded random</string>
+    <string name="random_file_disabled">The image is loaded in order</string>
+    <string name="time_5_seconds">every 5 seconds</string>
+    <string name="time_1_minute">every minute</string>
+    <string name="time_5_minutes">every 5 minutes</string>
+    <string name="time_15_minutes">every 15 minutes</string>
+    <string name="time_30_minutes">every 30 minutes</string>
+    <string name="time_1_hour">hourly</string>
+    <string name="time_1_day">daily</string>
+    <string name="time_list">Change to image  </string>
+    <string name="summary_time_list">Change to image</string>
 
 </resources>

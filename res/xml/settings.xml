@@ -2,18 +2,33 @@
     android:key="rajawalisharedprefs"
     android:title="@string/settings_title" >
 
-
-	<Preference 
-	    android:enabled="true" 
-	    android:title="@string/file" 
-	    android:key="file" 
-	    android:summary="@string/file_summary" 
-	    android:selectable="true"/>
     <ListPreference
         android:defaultValue="classic"
         android:entries="@array/rendererModeEntities"
         android:entryValues="@array/rendererModeValues"
         android:key="rendererMode"
         android:summary="@string/renderer_mode_list_summary"
-        android:title="@string/renderer_mode_list"/>	     
+        android:title="@string/renderer_mode_list"/>
+	<Preference 
+	    android:enabled="true" 
+	    android:title="@string/file" 
+	    android:key="file" 
+	    android:summary="@string/file_summary" 
+	    android:selectable="true"/>
+   <CheckBoxPreference 
+        android:enabled="true" 
+        android:title="@string/random_file" 
+        android:key="random_file" 
+        android:summaryOn="@string/random_file_enabled" 
+        android:summaryOff="@string/random_file_disabled" 
+        android:selectable="true" 
+        android:defaultValue="false"/>
+
+    	<ListPreference     
+		android:title="@string/time_list"
+		android:summary="@string/summary_time_list"
+		android:key="time"
+		android:defaultValue="time_5_minutes"
+		android:entries="@array/timeArray"
+		android:entryValues="@array/timeValues" />	     
 </PreferenceScreen>
