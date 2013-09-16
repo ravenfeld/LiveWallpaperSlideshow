@@ -25,6 +25,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import com.ipaulpro.afilechooser.utils.FileUtils;
@@ -69,6 +70,7 @@ public class Renderer extends RajawaliRenderer implements
 
 	@Override
 	protected void initScene() {
+		setFrameRate(30);
 		Camera2D cam = new Camera2D();
 		this.replaceAndSwitchCamera(getCurrentCamera(), cam);
 		getCurrentScene().setBackgroundColor(Color.RED);
@@ -76,7 +78,7 @@ public class Renderer extends RajawaliRenderer implements
 
 		mPlane = new Plane(1f, 1f, 1, 1);
 		mMaterial = new Material();
-		mTexture = new Texture("bg", R.drawable.bg);
+		mTexture = new Texture("bg");
 		mAnimatedTexture = new AnimatedGIFTexture("bgAnimated", R.drawable.bob);
 		try {
 			mMaterial.addTexture(mTexture);
@@ -133,8 +135,9 @@ public class Renderer extends RajawaliRenderer implements
 			} else {
 				loadFile(mListFiles.get(nextId()));
 			}
-
+			TextureManager.getInstance().reset();
 			TextureManager.getInstance().reload();
+
 			initPlane();
 		}
 	}
@@ -153,10 +156,22 @@ public class Renderer extends RajawaliRenderer implements
 	}
 
 	private void loadFile(String uri) {
+		File file = FileUtils.getFile(Uri.parse(uri.replaceFirst("/",
+				"file:///")));
+		if (file.isFile()) {
+			Log.e("TEST", "FILE " + uri);
 		mAnimatedTexture.stopAnimation();
 		if (FileUtils.getExtension(uri).equalsIgnoreCase(".gif")) {
 			mUseGIF = true;
-			mAnimatedTexture.setPathName(uri.replaceFirst("/", "file:///"));
+				if (mAnimatedTexture == null) {
+					mAnimatedTexture = new AnimatedGIFTexture("bgAnimated",
+							uri.replaceFirst("/", "file:///"));
+
+				} else {
+					mAnimatedTexture.setPathName(uri.replaceFirst("/",
+							"file:///"));
+
+				}
 			try {
 				mMaterial.removeTexture(mAnimatedTexture);
 				mMaterial.removeTexture(mTexture);
@@ -177,6 +192,11 @@ public class Renderer extends RajawaliRenderer implements
 			} catch (TextureException e) {
 				e.printStackTrace();
 			}
+		}
+		} else {
+			changedBackground();
+			mListFiles.remove(uri);
+
 		}
 	}
 
