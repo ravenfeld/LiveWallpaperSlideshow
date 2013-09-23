@@ -56,7 +56,7 @@ public class Renderer extends RajawaliRenderer implements
 	private boolean mUseFile;
 	private Date mDateLastChange;
 	private final Object mLock = new Object();
-
+	private float mXoffset;
 	public Renderer(Context context) {
 		super(context);
 
@@ -139,6 +139,7 @@ public class Renderer extends RajawaliRenderer implements
 			TextureManager.getInstance().reload();
 
 			initPlane();
+			onOffsetsChanged(mXoffset, 0, 0, 0, 0, 0);
 		}
 	}
 
@@ -184,8 +185,8 @@ public class Renderer extends RajawaliRenderer implements
 			mUseGIF = false;
 			mMaterial.removeTexture(mTexture);
 			Bitmap b = BitmapFactory.decodeFile(uri.replace("file:///", ""));
+				mTexture.shouldRecycle(true);
 			mTexture.setBitmap(b);
-
 			try {
 				mMaterial.removeTexture(mAnimatedTexture);
 				mMaterial.addTexture(mTexture);
@@ -390,6 +391,7 @@ public class Renderer extends RajawaliRenderer implements
 	@Override
 	public void onVisibilityChanged(boolean visible) {
 		super.onVisibilityChanged(visible);
+		System.gc();
 	}
 
 	@Override
@@ -413,6 +415,7 @@ public class Renderer extends RajawaliRenderer implements
 			float xOffsetStep, float yOffsetStep, int xPixelOffset,
 			int yPixelOffset) {
 		if (mPlane != null) {
+			mXoffset = xOffset;
 			mPlane.setX((1 - mWidthPlane) * (xOffset - 0.5));
 		}
 	}
