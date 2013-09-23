@@ -78,7 +78,7 @@ public class Renderer extends RajawaliRenderer implements
 
 		mPlane = new Plane(1f, 1f, 1, 1);
 		mMaterial = new Material();
-		mTexture = new Texture("bg");
+		mTexture = new Texture("bg", R.drawable.bg);
 		mAnimatedTexture = new AnimatedGIFTexture("bgAnimated", R.drawable.bob);
 		try {
 			mMaterial.addTexture(mTexture);
@@ -135,8 +135,8 @@ public class Renderer extends RajawaliRenderer implements
 			} else {
 				loadFile(mListFiles.get(nextId()));
 			}
-			TextureManager.getInstance().reset();
-			TextureManager.getInstance().reload();
+			// TextureManager.getInstance().reset();
+			// TextureManager.getInstance().reload();
 
 			initPlane();
 			onOffsetsChanged(mXoffset, 0, 0, 0, 0, 0);
@@ -161,9 +161,9 @@ public class Renderer extends RajawaliRenderer implements
 				"file:///")));
 		if (file.isFile()) {
 			Log.e("TEST", "FILE " + uri);
-		mAnimatedTexture.stopAnimation();
-		if (FileUtils.getExtension(uri).equalsIgnoreCase(".gif")) {
-			mUseGIF = true;
+			mAnimatedTexture.stopAnimation();
+			if (FileUtils.getExtension(uri).equalsIgnoreCase(".gif")) {
+				mUseGIF = true;
 				if (mAnimatedTexture == null) {
 					mAnimatedTexture = new AnimatedGIFTexture("bgAnimated",
 							uri.replaceFirst("/", "file:///"));
@@ -173,9 +173,18 @@ public class Renderer extends RajawaliRenderer implements
 							"file:///"));
 
 				}
-			try {
-				mMaterial.removeTexture(mAnimatedTexture);
+				try {
+					mMaterial.removeTexture(mAnimatedTexture);
+					mMaterial.removeTexture(mTexture);
+					mMaterial.addTexture(mAnimatedTexture);
+				} catch (TextureException e) {
+					e.printStackTrace();
+				}
+				mAnimatedTexture.rewind();
+			} else {
+				mUseGIF = false;
 				mMaterial.removeTexture(mTexture);
+
 				mMaterial.addTexture(mAnimatedTexture);
 			} catch (TextureException e) {
 				e.printStackTrace();
@@ -193,7 +202,6 @@ public class Renderer extends RajawaliRenderer implements
 			} catch (TextureException e) {
 				e.printStackTrace();
 			}
-		}
 		} else {
 			changedBackground();
 			mListFiles.remove(uri);
@@ -206,7 +214,6 @@ public class Renderer extends RajawaliRenderer implements
 		Bitmap b = BitmapFactory.decodeResource(mContext.getResources(),
 				resourceId);
 		mTexture.setBitmap(b);
-
 		try {
 			mMaterial.removeTexture(mAnimatedTexture);
 			mMaterial.addTexture(mTexture);
