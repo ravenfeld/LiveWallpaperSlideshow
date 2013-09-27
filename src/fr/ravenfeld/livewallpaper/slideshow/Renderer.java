@@ -57,6 +57,7 @@ public class Renderer extends RajawaliRenderer implements
 	private Date mDateLastChange;
 	private final Object mLock = new Object();
 	private float mXoffset;
+
 	public Renderer(Context context) {
 		super(context);
 
@@ -181,26 +182,20 @@ public class Renderer extends RajawaliRenderer implements
 					e.printStackTrace();
 				}
 				mAnimatedTexture.rewind();
+
 			} else {
 				mUseGIF = false;
 				mMaterial.removeTexture(mTexture);
-
-				mMaterial.addTexture(mAnimatedTexture);
-			} catch (TextureException e) {
-				e.printStackTrace();
-			}
-			mAnimatedTexture.rewind();
-		} else {
-			mUseGIF = false;
-			mMaterial.removeTexture(mTexture);
-			Bitmap b = BitmapFactory.decodeFile(uri.replace("file:///", ""));
+				Bitmap b = BitmapFactory
+						.decodeFile(uri.replace("file:///", ""));
 				mTexture.shouldRecycle(true);
-			mTexture.setBitmap(b);
-			try {
-				mMaterial.removeTexture(mAnimatedTexture);
-				mMaterial.addTexture(mTexture);
-			} catch (TextureException e) {
-				e.printStackTrace();
+				mTexture.setBitmap(b);
+				try {
+					mMaterial.removeTexture(mAnimatedTexture);
+					mMaterial.addTexture(mTexture);
+				} catch (TextureException e) {
+					e.printStackTrace();
+				}
 			}
 		} else {
 			changedBackground();
