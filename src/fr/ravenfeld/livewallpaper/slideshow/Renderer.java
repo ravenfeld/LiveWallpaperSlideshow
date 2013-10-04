@@ -12,10 +12,17 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import rajawali.Camera2D;
+import rajawali.animation.Animation3D.RepeatMode;
+import rajawali.animation.RotateAnimation3D;
+import rajawali.lights.ALight;
+import rajawali.lights.DirectionalLight;
 import rajawali.materials.Material;
+import rajawali.materials.methods.DiffuseMethod;
 import rajawali.materials.textures.ATexture.TextureException;
 import rajawali.materials.textures.AnimatedGIFTexture;
 import rajawali.materials.textures.Texture;
+import rajawali.math.vector.Vector3;
+import rajawali.primitives.Cube;
 import rajawali.primitives.Plane;
 import rajawali.renderer.RajawaliRenderer;
 import rajawali.wallpaper.Wallpaper;
@@ -27,6 +34,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.animation.AccelerateDecelerateInterpolator;
 
 import com.ipaulpro.afilechooser.utils.FileUtils;
 
@@ -81,6 +89,7 @@ public class Renderer extends RajawaliRenderer implements
 
 		mPlane = new Plane(1f, 1f, 1, 1);
 		mMaterial = new Material();
+		mMaterial.setColorInfluence(0.0f);
 		mTexture = new Texture("bg", R.drawable.bg);
 		mAnimatedTexture = new AnimatedGIFTexture("bgAnimated", R.drawable.bob);
 		try {
@@ -97,7 +106,7 @@ public class Renderer extends RajawaliRenderer implements
 
 		initBackground();
 		addChild(mPlane);
-
+		initTest();
 	}
 
 	private void initBackground() {
@@ -125,8 +134,8 @@ public class Renderer extends RajawaliRenderer implements
 				loadFile(file.getAbsolutePath());
 			}
 		}
-		// TextureManager.getInstance().reload();
-		mTextureManager.taskReload();
+		// mTextureManager.reload();
+		// mTextureManager.taskReload();
 		initPlane();
 	}
 
@@ -139,9 +148,10 @@ public class Renderer extends RajawaliRenderer implements
 			} else {
 				loadFile(mListFiles.get(nextId()));
 			}
-			// TextureManager.getInstance().reset();
-			// TextureManager.getInstance().reload();
-			mTextureManager.taskReload();
+
+			// mTextureManager.reset();
+			// mTextureManager.reload();
+			// mTextureManager.taskReload();
 			initPlane();
 			onOffsetsChanged(mXoffset, 0, 0, 0, 0, 0);
 		}
@@ -190,6 +200,8 @@ public class Renderer extends RajawaliRenderer implements
 
 			} else {
 				mUseGIF = false;
+				Material material = new Material();
+
 				mMaterial.removeTexture(mTexture);
 				try {
 					Bitmap b = Util.decodeUri(mContext,
@@ -198,12 +210,14 @@ public class Renderer extends RajawaliRenderer implements
 					mTexture.shouldRecycle(true);
 					mTexture.setBitmap(b);
 					// TextureManager.getInstance().replaceTexture(mTexture);
-
+					material.addTexture(mTexture);
 					mMaterial.removeTexture(mAnimatedTexture);
 					mMaterial.addTexture(mTexture);
 				} catch (TextureException e) {
 					e.printStackTrace();
+					Log.e("TEST", "TEXTURE EXCEPTION");
 				} catch (FileNotFoundException e) {
+					Log.e("TEST", "FILE NOT FOUND");
 					e.printStackTrace();
 				}
 			}
@@ -297,7 +311,8 @@ public class Renderer extends RajawaliRenderer implements
 		} else {
 			rendererMode(ModeRenderer.CLASSIC);
 		}
-
+		mPlane.setMaterial(mMaterial);
+		// mPlane.reload();
 	}
 
 	private void rendererMode(ModeRenderer modeRenderer) {
@@ -447,4 +462,39 @@ public class Renderer extends RajawaliRenderer implements
 			return mTexture.getHeight();
 		}
 	}
+	
+	private void initTest(){
+		ALight light = new DirectionalLight(-1, 0, -1);
+		light.setPower(2);
+		
+		getCurrentScene().addLight(light);
+		
+		// getCurrentCamera().setPosition(0, 0, 7);
+		// getCurrentCamera().setLookAt(0, 0, 0);
+
+		try {
+			Cube cube = new Cube(0.1f);
+			Material material = new Material();
+			material.enableLighting(true);
+			material.setDiffuseMethod(new DiffuseMethod.Lambert());
+			material.addTexture(new Texture("rajawaliTex", R.drawable.rajawali_tex));
+			material.setColorInfluence(0);
+			cube.setMaterial(material);
+			addChild(cube);
+
+			Vector3 axis = new Vector3(3, 1, 6);
+			axis.normalize();
+			RotateAnimation3D anim = new RotateAnimation3D(axis, 360);
+			anim.setDuration(8000);
+			anim.setRepeatMode(RepeatMode.INFINITE);
+			anim.setInterpolator(new AccelerateDecelerateInterpolator());
+			anim.setTransformable3D(cube);
+			registerAnimation(anim);
+			anim.play();
+			
+		} catch (TextureException e) {
+			e.printStackTrace();
+		}
+	}
+
 }
