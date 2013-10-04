@@ -1,6 +1,7 @@
 package fr.ravenfeld.livewallpaper.slideshow;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -15,7 +16,6 @@ import rajawali.materials.Material;
 import rajawali.materials.textures.ATexture.TextureException;
 import rajawali.materials.textures.AnimatedGIFTexture;
 import rajawali.materials.textures.Texture;
-import rajawali.materials.textures.TextureManager;
 import rajawali.primitives.Plane;
 import rajawali.renderer.RajawaliRenderer;
 import rajawali.wallpaper.Wallpaper;
@@ -29,6 +29,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 
 import com.ipaulpro.afilechooser.utils.FileUtils;
+
+import fr.ravenfeld.livewallpaper.slideshow.utils.Util;
 
 public class Renderer extends RajawaliRenderer implements
 		SharedPreferences.OnSharedPreferenceChangeListener {
@@ -123,7 +125,8 @@ public class Renderer extends RajawaliRenderer implements
 				loadFile(file.getAbsolutePath());
 			}
 		}
-		TextureManager.getInstance().reload();
+		// TextureManager.getInstance().reload();
+		mTextureManager.taskReload();
 		initPlane();
 	}
 
@@ -138,7 +141,7 @@ public class Renderer extends RajawaliRenderer implements
 			}
 			// TextureManager.getInstance().reset();
 			// TextureManager.getInstance().reload();
-
+			mTextureManager.taskReload();
 			initPlane();
 			onOffsetsChanged(mXoffset, 0, 0, 0, 0, 0);
 		}
@@ -172,8 +175,9 @@ public class Renderer extends RajawaliRenderer implements
 				} else {
 					mAnimatedTexture.setPathName(uri.replaceFirst("/",
 							"file:///"));
-
 				}
+				// TextureManager.getInstance().replaceTexture(mAnimatedTexture);
+
 				try {
 					mMaterial.removeTexture(mAnimatedTexture);
 					mMaterial.removeTexture(mTexture);
@@ -181,19 +185,25 @@ public class Renderer extends RajawaliRenderer implements
 				} catch (TextureException e) {
 					e.printStackTrace();
 				}
+
 				mAnimatedTexture.rewind();
 
 			} else {
 				mUseGIF = false;
 				mMaterial.removeTexture(mTexture);
-				Bitmap b = BitmapFactory
-						.decodeFile(uri.replace("file:///", ""));
-				mTexture.shouldRecycle(true);
-				mTexture.setBitmap(b);
 				try {
+					Bitmap b = Util.decodeUri(mContext,
+							Uri.parse("file:///" + file.getPath()));
+		
+					mTexture.shouldRecycle(true);
+					mTexture.setBitmap(b);
+					// TextureManager.getInstance().replaceTexture(mTexture);
+
 					mMaterial.removeTexture(mAnimatedTexture);
 					mMaterial.addTexture(mTexture);
 				} catch (TextureException e) {
+					e.printStackTrace();
+				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				}
 			}
