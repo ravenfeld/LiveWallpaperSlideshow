@@ -132,14 +132,11 @@ public class Renderer extends RajawaliRenderer implements
 				loadFile(file.getAbsolutePath());
 			}
 		}
-		// mTextureManager.reload();
-		// mTextureManager.taskReload();
 		initPlane();
 	}
 
 	private void changedBackground() {
 		synchronized (mLock) {
-
 			boolean random = mSharedPreferences
 					.getBoolean("random_file", false);
 			if (random) {
@@ -149,14 +146,12 @@ public class Renderer extends RajawaliRenderer implements
 			}
 
 
-			mTextureManager.reload();
-			// mTextureManager.reset();
 
-			// mTextureManager.taskReload();
-			// addChild(mPlane);
 			initPlane();
 			onOffsetsChanged(mXoffset, 0, 0, 0, 0, 0);
-		}
+             mTextureManager.reload();
+
+        }
 	}
 
 	private int nextId() {
@@ -247,10 +242,10 @@ public class Renderer extends RajawaliRenderer implements
 		if (mDateLastChange == null) {
 			mDateLastChange = date;
 		}
-		GregorianCalendar lastDate = new GregorianCalendar(
-				mDateLastChange.getYear() + 1900, mDateLastChange.getMonth(),
-				mDateLastChange.getDate(), mDateLastChange.getHours(),
-				mDateLastChange.getMinutes(), mDateLastChange.getSeconds());
+
+        GregorianCalendar lastDate = new GregorianCalendar();
+        lastDate.setTime(mDateLastChange);
+
 		switch (mTimePref) {
 		case TIME_5_SECONDS:
 			lastDate.add(GregorianCalendar.SECOND, 5);
