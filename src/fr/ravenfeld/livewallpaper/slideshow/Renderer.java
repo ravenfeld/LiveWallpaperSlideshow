@@ -14,8 +14,6 @@ import javax.microedition.khronos.opengles.GL10;
 import rajawali.Camera2D;
 import rajawali.animation.Animation3D.RepeatMode;
 import rajawali.animation.RotateAnimation3D;
-import rajawali.lights.ALight;
-import rajawali.lights.DirectionalLight;
 import rajawali.materials.Material;
 import rajawali.materials.methods.DiffuseMethod;
 import rajawali.materials.textures.ATexture.TextureException;
@@ -106,7 +104,7 @@ public class Renderer extends RajawaliRenderer implements
 
 		initBackground();
 		addChild(mPlane);
-		initTest();
+		// initTest();
 	}
 
 	private void initBackground() {
@@ -141,6 +139,7 @@ public class Renderer extends RajawaliRenderer implements
 
 	private void changedBackground() {
 		synchronized (mLock) {
+
 			boolean random = mSharedPreferences
 					.getBoolean("random_file", false);
 			if (random) {
@@ -149,9 +148,12 @@ public class Renderer extends RajawaliRenderer implements
 				loadFile(mListFiles.get(nextId()));
 			}
 
+
+			mTextureManager.reload();
 			// mTextureManager.reset();
-			// mTextureManager.reload();
+
 			// mTextureManager.taskReload();
+			// addChild(mPlane);
 			initPlane();
 			onOffsetsChanged(mXoffset, 0, 0, 0, 0, 0);
 		}
@@ -200,7 +202,6 @@ public class Renderer extends RajawaliRenderer implements
 
 			} else {
 				mUseGIF = false;
-				Material material = new Material();
 
 				mMaterial.removeTexture(mTexture);
 				try {
@@ -210,7 +211,6 @@ public class Renderer extends RajawaliRenderer implements
 					mTexture.shouldRecycle(true);
 					mTexture.setBitmap(b);
 					// TextureManager.getInstance().replaceTexture(mTexture);
-					material.addTexture(mTexture);
 					mMaterial.removeTexture(mAnimatedTexture);
 					mMaterial.addTexture(mTexture);
 				} catch (TextureException e) {
@@ -236,6 +236,7 @@ public class Renderer extends RajawaliRenderer implements
 		try {
 			mMaterial.removeTexture(mAnimatedTexture);
 			mMaterial.addTexture(mTexture);
+
 		} catch (TextureException e) {
 		}
 	}
@@ -311,8 +312,7 @@ public class Renderer extends RajawaliRenderer implements
 		} else {
 			rendererMode(ModeRenderer.CLASSIC);
 		}
-		mPlane.setMaterial(mMaterial);
-		// mPlane.reload();
+
 	}
 
 	private void rendererMode(ModeRenderer modeRenderer) {
@@ -382,6 +382,7 @@ public class Renderer extends RajawaliRenderer implements
 		synchronized (mLock) {
 
 			super.onDrawFrame(glUnused);
+
 
 			if (mAnimatedTexture != null) {
 				try {
@@ -464,20 +465,15 @@ public class Renderer extends RajawaliRenderer implements
 	}
 	
 	private void initTest(){
-		ALight light = new DirectionalLight(-1, 0, -1);
-		light.setPower(2);
-		
-		getCurrentScene().addLight(light);
-		
-		// getCurrentCamera().setPosition(0, 0, 7);
-		// getCurrentCamera().setLookAt(0, 0, 0);
+
 
 		try {
 			Cube cube = new Cube(0.1f);
 			Material material = new Material();
 			material.enableLighting(true);
 			material.setDiffuseMethod(new DiffuseMethod.Lambert());
-			material.addTexture(new Texture("rajawaliTex", R.drawable.rajawali_tex));
+			material.addTexture(new Texture("rajawaliTex",
+					R.drawable.rajawali_tex));
 			material.setColorInfluence(0);
 			cube.setMaterial(material);
 			addChild(cube);
@@ -491,7 +487,7 @@ public class Renderer extends RajawaliRenderer implements
 			anim.setTransformable3D(cube);
 			registerAnimation(anim);
 			anim.play();
-			
+
 		} catch (TextureException e) {
 			e.printStackTrace();
 		}
