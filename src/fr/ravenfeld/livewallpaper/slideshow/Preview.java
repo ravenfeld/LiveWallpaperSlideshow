@@ -33,8 +33,8 @@ public class Preview extends Activity {
 			 */
 			intent.setAction(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER);
 			Resources res = getResources();
-			String hint = res.getString(R.string.picker_toast_prefix) + res.getString(R.string.lwp_name)
-					+ res.getString(R.string.picker_toast_suffix);
+			String hint = res.getString(R.string.select) + res.getString(R.string.lwp_name)
+					+ res.getString(R.string.select_end);
 			Toast toast = Toast.makeText(this, hint, Toast.LENGTH_LONG);
 			toast.show();
 		}

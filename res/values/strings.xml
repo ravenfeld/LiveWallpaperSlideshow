@@ -12,8 +12,8 @@
 
     <!-- Author -->
     <string name="lwp_author">Ravenfeld</string>
-    <string name="picker_toast_prefix">Choose \"</string>
-    <string name="picker_toast_suffix">\" from the list</string>
+    <string name="select">Choose \"</string>
+    <string name="select_end">\" from the list</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
