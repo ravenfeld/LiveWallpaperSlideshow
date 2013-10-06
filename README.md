@@ -28,7 +28,7 @@ Please check out the [example project](https://github.com/ravenfeld/LiveWallpape
   * Alexis Lecanu alias Ravenfeld - [alexis.lecanu@gmail.com](mailto:alexis.lecanu@gmail.com)
     
 ## Tested 
-
+  * Galaxy S3
     
 ## Bugs
 
