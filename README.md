@@ -13,7 +13,9 @@ Please check out the [example project](https://github.com/ravenfeld/LiveWallpape
 
 #### Eclipse
  You have to [download it](https://github.com/ravenfeld/LiveWallpaperSlideshow/archive/master.zip) 
+ 
  You have to [download it](https://github.com/ravenfeld/aFileChooser/archive/dev.zip) 
+ 
  You have to [download it](https://github.com/ravenfeld/Rajawali/archive/master.zip) 
  
  Import the **LiveWallpaperSlideshow-master** folder in your Eclipse.
