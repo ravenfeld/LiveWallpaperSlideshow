@@ -49,11 +49,11 @@ public class Util {
 			throws FileNotFoundException {
 		WallpaperManager wallpaperManager = WallpaperManager
 				.getInstance(context);
-		final int REQUIRED_SIZE_WIDHT = wallpaperManager
+		final int REQUIRED_SIZE_WIDTH = wallpaperManager
 				.getDesiredMinimumWidth();
 		final int REQUIRED_SIZE_HEIGHT = wallpaperManager
 				.getDesiredMinimumHeight();
-		return Util.decodeUri(context, selectedImage, REQUIRED_SIZE_WIDHT, REQUIRED_SIZE_HEIGHT);
+		return Util.decodeUri(context, selectedImage, REQUIRED_SIZE_WIDTH, REQUIRED_SIZE_HEIGHT);
 	}
 	
 	public static Bitmap decodeUri(Context context, Uri selectedImage,
