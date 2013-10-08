@@ -176,10 +176,10 @@ public class Renderer extends RajawaliRenderer implements
                 mUseGIF=true;
                 try {
                     if(mCurrent==0){
-                        mBackgroundGIF_1.updateTexture(uri);
+                        mBackgroundGIF_2.updateTexture(uri);
                         mCurrent=1;
                     }else{
-                        mBackgroundGIF_2.updateTexture(uri);
+                        mBackgroundGIF_1.updateTexture(uri);
                         mCurrent=0;
                     }
                 } catch (TextureException e) {
@@ -188,17 +188,15 @@ public class Renderer extends RajawaliRenderer implements
                 }
             } else {
 				mUseGIF = false;
-
-
 				try {
 					Bitmap b = Util.decodeUri(mContext,
 							Uri.parse("file:///" + file.getPath()));
 
                     if(mCurrent==0){
-                        mBackground_1.updateTexture(b);
+                        mBackground_2.updateTexture(b);
                         mCurrent=1;
                     }else{
-                        mBackground_2.updateTexture(b);
+                        mBackground_1.updateTexture(b);
                         mCurrent=0;
                     }
 				} catch (TextureException e) {
