@@ -65,6 +65,8 @@ public class Renderer extends RajawaliRenderer implements
 	private Date mDateLastChange;
 	private final Object mLock = new Object();
 	private float mXoffset;
+    private boolean mSurfaceCreated=false;
+    private String mUri;
 
 	public Renderer(Context context) {
 		super(context);
@@ -104,7 +106,7 @@ public class Renderer extends RajawaliRenderer implements
 
 		initBackground();
 		addChild(mPlane);
-		// initTest();
+		initTest();
 	}
 
 	private void initBackground() {
@@ -140,19 +142,20 @@ public class Renderer extends RajawaliRenderer implements
 			boolean random = mSharedPreferences
 					.getBoolean("random_file", false);
 			if (random) {
-				loadFile(mListFiles.get(randomId()));
+				mUri =mListFiles.get(randomId());
 			} else {
-				loadFile(mListFiles.get(nextId()));
+				mUri = mListFiles.get(nextId());
 			}
-
-
-
-			initPlane();
-			onOffsetsChanged(mXoffset, 0, 0, 0, 0, 0);
-             mTextureManager.reload();
-
+            updateBackground();
         }
 	}
+
+    private void updateBackground(){
+        loadFile(mUri);
+        initPlane();
+        onOffsetsChanged(mXoffset, 0, 0, 0, 0, 0);
+        mTextureManager.reload();
+    }
 
 	private int nextId() {
 		mIdCurrent += 1;
@@ -183,8 +186,6 @@ public class Renderer extends RajawaliRenderer implements
 					mAnimatedTexture.setPathName(uri.replaceFirst("/",
 							"file:///"));
 				}
-				// TextureManager.getInstance().replaceTexture(mAnimatedTexture);
-
 				try {
 					mMaterial.removeTexture(mAnimatedTexture);
 					mMaterial.removeTexture(mTexture);
@@ -198,14 +199,15 @@ public class Renderer extends RajawaliRenderer implements
 			} else {
 				mUseGIF = false;
 
-				mMaterial.removeTexture(mTexture);
+
 				try {
 					Bitmap b = Util.decodeUri(mContext,
 							Uri.parse("file:///" + file.getPath()));
-		
+
+
 					mTexture.shouldRecycle(true);
 					mTexture.setBitmap(b);
-					// TextureManager.getInstance().replaceTexture(mTexture);
+                    mMaterial.removeTexture(mTexture);
 					mMaterial.removeTexture(mAnimatedTexture);
 					mMaterial.addTexture(mTexture);
 				} catch (TextureException e) {
@@ -389,8 +391,14 @@ public class Renderer extends RajawaliRenderer implements
 			}
 			if (mTexture != null && mAnimatedTexture != null
 					&& mListFiles != null && mListFiles.size() > 0 && mUseFile
-					&& checkDate()) {
+					) {
+                if(checkDate()){
 				changedBackground();
+                }else if(mSurfaceCreated){
+                    mSurfaceCreated=false;
+                    updateBackground();
+                }
+
 			}
 		}
 	}
@@ -403,6 +411,8 @@ public class Renderer extends RajawaliRenderer implements
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		super.onSurfaceCreated(gl, config);
+        Log.e("TEST","onSurfaceCreated");
+        mSurfaceCreated=true;
 	}
 
 	@Override
@@ -414,7 +424,6 @@ public class Renderer extends RajawaliRenderer implements
 	@Override
 	public void onVisibilityChanged(boolean visible) {
 		super.onVisibilityChanged(visible);
-		System.gc();
 	}
 
 	@Override
