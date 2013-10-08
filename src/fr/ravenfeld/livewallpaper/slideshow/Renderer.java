@@ -11,6 +11,10 @@ import java.util.Random;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import fr.ravenfeld.livewallpaper.library.objects.simple.ABackground;
+import fr.ravenfeld.livewallpaper.slideshow.objects.Background;
+import fr.ravenfeld.livewallpaper.slideshow.objects.BackgroundGIF;
+import fr.ravenfeld.livewallpaper.slideshow.objects.IBackground;
 import rajawali.Camera2D;
 import rajawali.animation.Animation3D.RepeatMode;
 import rajawali.animation.RotateAnimation3D;
@@ -21,7 +25,6 @@ import rajawali.materials.textures.AnimatedGIFTexture;
 import rajawali.materials.textures.Texture;
 import rajawali.math.vector.Vector3;
 import rajawali.primitives.Cube;
-import rajawali.primitives.Plane;
 import rajawali.renderer.RajawaliRenderer;
 import rajawali.wallpaper.Wallpaper;
 import android.content.Context;
@@ -52,22 +55,19 @@ public class Renderer extends RajawaliRenderer implements
 
 	private TimePref mTimePref = TimePref.TIME_5_MINUTES;
 
-	private Texture mTexture;
-	private AnimatedGIFTexture mAnimatedTexture;
-	private Material mMaterial;
-	private Plane mPlane;
-	private float mWidthPlane;
+    private Background mBackground_1;
+    private Background mBackground_2;
+    private BackgroundGIF mBackgroundGIF_1;
+    private BackgroundGIF mBackgroundGIF_2;
 
 	private final ArrayList<String> mListFiles;
 	private int mIdCurrent = -1;
-	private boolean mUseGIF;
-	private boolean mUseFile;
+	private boolean mUseGIF=false;
+	private boolean mUseFolder;
 	private Date mDateLastChange;
 	private final Object mLock = new Object();
 	private float mXoffset;
-    private boolean mSurfaceCreated=false;
-    private String mUri;
-
+    private int mCurrent=0;
 	public Renderer(Context context) {
 		super(context);
 
@@ -87,26 +87,20 @@ public class Renderer extends RajawaliRenderer implements
 		getCurrentScene().setBackgroundColor(Color.RED);
 		getCurrentCamera().setLookAt(0, 0, 0);
 
-		mPlane = new Plane(1f, 1f, 1, 1);
-		mMaterial = new Material();
-		mMaterial.setColorInfluence(0.0f);
-		mTexture = new Texture("bg", R.drawable.bg);
-		mAnimatedTexture = new AnimatedGIFTexture("bgAnimated", R.drawable.bob);
-		try {
-			mMaterial.addTexture(mTexture);
-
-		} catch (TextureException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		mPlane.setMaterial(mMaterial);
-		mPlane.setPosition(0, 0, 0);
-		mPlane.setRotY(180);
-		mPlane.setTransparent(true);
-
+        try{
+            mBackground_1 = new Background("bg", R.drawable.bg);
+            mBackground_2 = new Background("bg", R.drawable.bg);
+            mBackgroundGIF_1 = new BackgroundGIF("bg", R.drawable.bob);
+            mBackgroundGIF_2 = new BackgroundGIF("bg", R.drawable.bob);
+        }catch (TextureException e){
+            e.printStackTrace();
+        }
 		initBackground();
-		addChild(mPlane);
-		initTest();
+		addChild(mBackground_1.getObject3D());
+        addChild(mBackground_2.getObject3D());
+        addChild(mBackgroundGIF_1.getObject3D());
+        addChild(mBackgroundGIF_2.getObject3D());
+		//initTest();
 	}
 
 	private void initBackground() {
@@ -114,7 +108,7 @@ public class Renderer extends RajawaliRenderer implements
 		if (!uri.equalsIgnoreCase("")) {
 			File file = FileUtils.getFile(Uri.parse(uri));
 			if (file.isDirectory()) {
-				mUseFile = true;
+				mUseFolder = true;
 				mListFiles.clear();
 				List<File> list = FileUtils.getFileList(file.getAbsolutePath(),
 						Settings.INCLUDE_EXTENSIONS_LIST);
@@ -126,11 +120,11 @@ public class Renderer extends RajawaliRenderer implements
 				if (mListFiles.size() > 0) {
 					changedBackground();
 				} else {
-					loadRessourceDefault(R.drawable.bg);
+					loadResourceDefault(R.drawable.bg);
 				}
 
 			} else if (file.isFile()) {
-				mUseFile = false;
+				mUseFolder = false;
 				loadFile(file.getAbsolutePath());
 			}
 		}
@@ -141,17 +135,19 @@ public class Renderer extends RajawaliRenderer implements
 		synchronized (mLock) {
 			boolean random = mSharedPreferences
 					.getBoolean("random_file", false);
+            String uri;
 			if (random) {
-				mUri =mListFiles.get(randomId());
+				 uri =mListFiles.get(randomId());
 			} else {
-				mUri = mListFiles.get(nextId());
+                 uri = mListFiles.get(nextId());
 			}
-            updateBackground();
+            updateBackground(uri);
         }
 	}
 
-    private void updateBackground(){
-        loadFile(mUri);
+    private void updateBackground(String uri){
+        loadFile(uri);
+        visibleBackground();
         initPlane();
         onOffsetsChanged(mXoffset, 0, 0, 0, 0, 0);
         mTextureManager.reload();
@@ -175,28 +171,22 @@ public class Renderer extends RajawaliRenderer implements
 				"file:///")));
 		if (file.isFile()) {
 			Log.e("TEST", "FILE " + uri);
-			mAnimatedTexture.stopAnimation();
+
 			if (FileUtils.getExtension(uri).equalsIgnoreCase(".gif")) {
-				mUseGIF = true;
-				if (mAnimatedTexture == null) {
-					mAnimatedTexture = new AnimatedGIFTexture("bgAnimated",
-							uri.replaceFirst("/", "file:///"));
-
-				} else {
-					mAnimatedTexture.setPathName(uri.replaceFirst("/",
-							"file:///"));
-				}
-				try {
-					mMaterial.removeTexture(mAnimatedTexture);
-					mMaterial.removeTexture(mTexture);
-					mMaterial.addTexture(mAnimatedTexture);
-				} catch (TextureException e) {
-					e.printStackTrace();
-				}
-
-				mAnimatedTexture.rewind();
-
-			} else {
+                mUseGIF=true;
+                try {
+                    if(mCurrent==0){
+                        mBackgroundGIF_1.updateTexture(uri);
+                        mCurrent=1;
+                    }else{
+                        mBackgroundGIF_2.updateTexture(uri);
+                        mCurrent=0;
+                    }
+                } catch (TextureException e) {
+                    Log.e("TEST","TEXTURE EXCEPTION");
+                    e.printStackTrace();
+                }
+            } else {
 				mUseGIF = false;
 
 
@@ -204,15 +194,16 @@ public class Renderer extends RajawaliRenderer implements
 					Bitmap b = Util.decodeUri(mContext,
 							Uri.parse("file:///" + file.getPath()));
 
-
-					mTexture.shouldRecycle(true);
-					mTexture.setBitmap(b);
-                    mMaterial.removeTexture(mTexture);
-					mMaterial.removeTexture(mAnimatedTexture);
-					mMaterial.addTexture(mTexture);
+                    if(mCurrent==0){
+                        mBackground_1.updateTexture(b);
+                        mCurrent=1;
+                    }else{
+                        mBackground_2.updateTexture(b);
+                        mCurrent=0;
+                    }
 				} catch (TextureException e) {
+                    Log.e("TEST", "TEXTURE EXCEPTION");
 					e.printStackTrace();
-					Log.e("TEST", "TEXTURE EXCEPTION");
 				} catch (FileNotFoundException e) {
 					Log.e("TEST", "FILE NOT FOUND");
 					e.printStackTrace();
@@ -225,18 +216,28 @@ public class Renderer extends RajawaliRenderer implements
 		}
 	}
 
-	private void loadRessourceDefault(int resourceId) {
+	private void loadResourceDefault(int resourceId) {
 		mUseGIF = false;
 		Bitmap b = BitmapFactory.decodeResource(mContext.getResources(),
 				resourceId);
-		mTexture.setBitmap(b);
 		try {
-			mMaterial.removeTexture(mAnimatedTexture);
-			mMaterial.addTexture(mTexture);
+            mBackground_1.updateTexture(b);
 
 		} catch (TextureException e) {
+            Log.e("TEST", "TEXTURE EXCEPTION");
+            e.printStackTrace();
 		}
+        mCurrent=0;
 	}
+
+    private void visibleBackground(){
+        mBackground_1.setVisible(false);
+        mBackground_2.setVisible(false);
+        mBackgroundGIF_1.setVisible(false);
+        mBackgroundGIF_2.setVisible(false);
+        getBackground().setVisible(true);
+
+    }
 
 	private boolean checkDate() {
 		boolean bool = false;
@@ -317,9 +318,7 @@ public class Renderer extends RajawaliRenderer implements
 		float ratioVideo = getTextureHeight() / getTextureWidth();
 
 		if (ratioDisplay == ratioVideo) {
-			mPlane.setScaleX(1f);
-			mPlane.setScaleY(1f);
-			mWidthPlane = 1f;
+            rendererModeSquare();
 		} else if (ratioDisplay >= 1) {
 			// PORTRAIT
 			switch (modeRenderer) {
@@ -349,29 +348,20 @@ public class Renderer extends RajawaliRenderer implements
 		}
 	}
 
+    private void rendererModeSquare() {
+getBackground().rendererModeSquare();
+    }
+
 	private void rendererModeClassic() {
-		float ratioDisplay = (float) mViewportHeight / (float) mViewportWidth;
-		float ratioSize = 1f / getTextureHeight();
-		mWidthPlane = getTextureWidth() * ratioSize * ratioDisplay;
-		mPlane.setScaleX(mWidthPlane);
-		mPlane.setScaleY(1);
+getBackground().rendererModeClassic(mViewportWidth, mViewportHeight);
 	}
 
 	private void rendererModeLetterBox() {
-		float ratioDisplay = (float) mViewportWidth / (float) mViewportHeight;
-		float ratioSize = 1f / getTextureWidth();
-		mPlane.setScaleY(getTextureHeight() * ratioSize * ratioDisplay);
-		mPlane.setScaleX(1f);
-		mWidthPlane = 1f;
-
+getBackground().rendererModeLetterBox(mViewportWidth, mViewportHeight);
 	}
 
 	private void rendererModeStretched() {
-		float ratioDisplay = (float) mViewportHeight / (float) mViewportWidth;
-		float ratioSize = 1f / getTextureHeight();
-		mPlane.setScaleX(getTextureWidth() * ratioSize * ratioDisplay);
-		mPlane.setScaleY(1f);
-		mWidthPlane = 1f;
+        getBackground().rendererModeStretched(mViewportWidth, mViewportHeight);
 	}
 
 	@Override
@@ -379,26 +369,19 @@ public class Renderer extends RajawaliRenderer implements
 		synchronized (mLock) {
 
 			super.onDrawFrame(glUnused);
-
-
-			if (mAnimatedTexture != null) {
+			if (mBackgroundGIF_1 != null && mBackgroundGIF_2!= null) {
 				try {
-					mAnimatedTexture.update();
+                    mBackgroundGIF_1.update();
+                    mBackgroundGIF_2.update();
 				} catch (TextureException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
-			if (mTexture != null && mAnimatedTexture != null
-					&& mListFiles != null && mListFiles.size() > 0 && mUseFile
-					) {
-                if(checkDate()){
+			if (mBackground_1 != null && mBackground_2 != null
+					&& mListFiles != null && mListFiles.size() > 0 && mUseFolder
+					&&checkDate()) {
 				changedBackground();
-                }else if(mSurfaceCreated){
-                    mSurfaceCreated=false;
-                    updateBackground();
-                }
-
 			}
 		}
 	}
@@ -411,8 +394,6 @@ public class Renderer extends RajawaliRenderer implements
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		super.onSurfaceCreated(gl, config);
-        Log.e("TEST","onSurfaceCreated");
-        mSurfaceCreated=true;
 	}
 
 	@Override
@@ -435,7 +416,7 @@ public class Renderer extends RajawaliRenderer implements
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 			String key) {
 		synchronized (mLock) {
-			if (mTexture != null && mAnimatedTexture != null) {
+			if (mBackground_1 != null && mBackground_2 != null) {
 				initBackground();
 				updateTime();
 			}
@@ -446,28 +427,37 @@ public class Renderer extends RajawaliRenderer implements
 	public void onOffsetsChanged(float xOffset, float yOffset,
 			float xOffsetStep, float yOffsetStep, int xPixelOffset,
 			int yPixelOffset) {
-		if (mPlane != null) {
+		if (mBackground_1 != null && mBackground_2!= null) {
 			mXoffset = xOffset;
-			mPlane.setX((1 - mWidthPlane) * (xOffset - 0.5));
+            getBackground().offsetsChanged(xOffset);
 		}
 	}
 
 	private float getTextureWidth() {
-		if (mUseGIF) {
-			return mAnimatedTexture.getWidth();
-		} else {
-			return mTexture.getWidth();
-		}
+        return getBackground().getWidth();
 	}
 
 	private float getTextureHeight() {
-		if (mUseGIF) {
-			return mAnimatedTexture.getHeight();
-		} else {
-			return mTexture.getHeight();
-		}
+         return getBackground().getHeight();
 	}
-	
+
+    private IBackground getBackground(){
+        if(mCurrent==0){
+            if(mUseGIF){
+                return mBackgroundGIF_1;
+            }else{
+                return mBackground_1;
+            }
+        }else{
+            if(mUseGIF){
+                return mBackgroundGIF_2;
+            }else{
+                return mBackground_2;
+            }
+        }
+    }
+
+
 	private void initTest(){
 
 
