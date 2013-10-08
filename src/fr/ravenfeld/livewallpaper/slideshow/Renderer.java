@@ -11,7 +11,6 @@ import java.util.Random;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import fr.ravenfeld.livewallpaper.library.objects.simple.ABackground;
 import fr.ravenfeld.livewallpaper.slideshow.objects.Background;
 import fr.ravenfeld.livewallpaper.slideshow.objects.BackgroundGIF;
 import fr.ravenfeld.livewallpaper.slideshow.objects.IBackground;
@@ -21,7 +20,6 @@ import rajawali.animation.RotateAnimation3D;
 import rajawali.materials.Material;
 import rajawali.materials.methods.DiffuseMethod;
 import rajawali.materials.textures.ATexture.TextureException;
-import rajawali.materials.textures.AnimatedGIFTexture;
 import rajawali.materials.textures.Texture;
 import rajawali.math.vector.Vector3;
 import rajawali.primitives.Cube;
@@ -50,7 +48,7 @@ public class Renderer extends RajawaliRenderer implements
 	}
 
 	private enum TimePref {
-		TIME_5_SECONDS, TIME_1_MINUTE, TIME_5_MINUTES, TIME_15_MINUTES, TIME_30_MINUTES, TIME_1_HOUR, TIME_1_DAY
+        TIME_30_SECONDS, TIME_1_MINUTE, TIME_5_MINUTES, TIME_15_MINUTES, TIME_30_MINUTES, TIME_1_HOUR, TIME_1_DAY
 	}
 
 	private TimePref mTimePref = TimePref.TIME_5_MINUTES;
@@ -248,8 +246,8 @@ public class Renderer extends RajawaliRenderer implements
         lastDate.setTime(mDateLastChange);
 
 		switch (mTimePref) {
-		case TIME_5_SECONDS:
-			lastDate.add(GregorianCalendar.SECOND, 5);
+		case TIME_30_SECONDS:
+			lastDate.add(GregorianCalendar.SECOND, 30);
 			break;
 		case TIME_1_MINUTE:
 			lastDate.add(GregorianCalendar.MINUTE, 1);
@@ -281,8 +279,8 @@ public class Renderer extends RajawaliRenderer implements
 	private void updateTime() {
 		String timePref = mSharedPreferences
 				.getString("time", "time_5_minutes");
-		if (timePref.equalsIgnoreCase("time_5_seconds")) {
-			mTimePref = TimePref.TIME_5_SECONDS;
+		if (timePref.equalsIgnoreCase("time_30_seconds")) {
+			mTimePref = TimePref.TIME_30_SECONDS;
 		} else if (timePref.equalsIgnoreCase("time_1_minute")) {
 			mTimePref = TimePref.TIME_1_MINUTE;
 		} else if (timePref.equalsIgnoreCase("time_5_minutes")) {
