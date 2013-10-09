@@ -103,7 +103,7 @@ public class Renderer extends RajawaliRenderer implements
         initBackground();
         addChild(mBackground.getObject3D());
         addChild(mBackgroundGIF.getObject3D());
-        initTest();
+        //initTest();
     }
 
     private void initBackground() {

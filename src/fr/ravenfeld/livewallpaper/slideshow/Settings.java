@@ -114,44 +114,13 @@ public class Settings extends PreferenceActivity implements SharedPreferences.On
 	}
 
 	private void rendererText() {
-		String stringValue = mRendererMode.getValue();
-		String string = "";
-		if (stringValue.equalsIgnoreCase("classic")) {
-			string = getString(R.string.classic);
-		} else if (stringValue.equalsIgnoreCase("letter_boxed")) {
-			string = getString(R.string.letter_boxed);
-		} else if (stringValue.equalsIgnoreCase("stretched")) {
-			string = getString(R.string.stretched);
-		}
-
 		mRendererMode.setSummary(getString(R.string.renderer_mode_list_summary)
-				+ ": " + string);
+				+ ": " + mRendererMode.getEntry());
 	}
 
 	private void timeText() {
-		String stringValue = mTimeChange.getValue();
-		String string = "";
-        if (stringValue.equalsIgnoreCase("time_5_seconds")) {
-            string = getString(R.string.time_5_seconds);
-        }
-		else if (stringValue.equalsIgnoreCase("time_30_seconds")) {
-			string = getString(R.string.time_30_seconds);
-		} else if (stringValue.equalsIgnoreCase("time_1_minute")) {
-			string = getString(R.string.time_1_minute);
-		} else if (stringValue.equalsIgnoreCase("time_5_minutes")) {
-			string = getString(R.string.time_5_minutes);
-		} else if (stringValue.equalsIgnoreCase("time_15_minutes")) {
-			string = getString(R.string.time_15_minutes);
-		} else if (stringValue.equalsIgnoreCase("time_30_minutes")) {
-			string = getString(R.string.time_30_minutes);
-		} else if (stringValue.equalsIgnoreCase("time_1_hour")) {
-			string = getString(R.string.time_1_hour);
-		} else if (stringValue.equalsIgnoreCase("time_1_day")) {
-			string = getString(R.string.time_1_day);
-		}
-
 		mTimeChange.setSummary(getString(R.string.summary_time_list)
-				+ ": " + string);
+				+ ": " + mTimeChange.getEntry());
 	}
 
 	private void setUriPreference(String uri) {
