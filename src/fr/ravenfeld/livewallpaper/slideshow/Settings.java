@@ -131,9 +131,11 @@ public class Settings extends PreferenceActivity implements SharedPreferences.On
 	private void timeText() {
 		String stringValue = mTimeChange.getValue();
 		String string = "";
-
-		if (stringValue.equalsIgnoreCase("time_5_seconds")) {
-			string = getString(R.string.time_5_seconds);
+        if (stringValue.equalsIgnoreCase("time_5_seconds")) {
+            string = getString(R.string.time_5_seconds);
+        }
+		else if (stringValue.equalsIgnoreCase("time_30_seconds")) {
+			string = getString(R.string.time_30_seconds);
 		} else if (stringValue.equalsIgnoreCase("time_1_minute")) {
 			string = getString(R.string.time_1_minute);
 		} else if (stringValue.equalsIgnoreCase("time_5_minutes")) {

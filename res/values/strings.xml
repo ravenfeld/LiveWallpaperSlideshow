@@ -29,6 +29,7 @@
     <string name="random_file">Random image</string>
     <string name="random_file_enabled">The image is loaded random</string>
     <string name="random_file_disabled">The image is loaded in order</string>
+    <string name="time_5_seconds">every 5 seconds</string>
     <string name="time_30_seconds">every 30 seconds</string>
     <string name="time_1_minute">every minute</string>
     <string name="time_5_minutes">every 5 minutes</string>

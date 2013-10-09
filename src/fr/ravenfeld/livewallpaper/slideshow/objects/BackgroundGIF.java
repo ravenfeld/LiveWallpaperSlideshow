@@ -23,10 +23,7 @@ public class BackgroundGIF extends BackgroundGIFFixed implements  IBackground {
 
     public void updateTexture(String uri)throws ATexture.TextureException {
         mTexture.stopAnimation();
-
         mTexture.setPathName( uri.replaceFirst("/", "file:///"));
-        mMaterial.removeTexture(mTexture);
-        mMaterial.addTexture(mTexture);
         mTexture.rewind();
     }
 
