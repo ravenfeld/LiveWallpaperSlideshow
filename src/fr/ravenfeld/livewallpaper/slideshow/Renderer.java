@@ -11,10 +11,12 @@ import java.util.Random;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import fr.ravenfeld.livewallpaper.library.objects.animation.DisappearAnimation;
 import fr.ravenfeld.livewallpaper.slideshow.objects.Background;
 import fr.ravenfeld.livewallpaper.slideshow.objects.BackgroundGIF;
 import fr.ravenfeld.livewallpaper.slideshow.objects.IBackground;
 import rajawali.Camera2D;
+import rajawali.animation.Animation3D;
 import rajawali.animation.Animation3D.RepeatMode;
 import rajawali.animation.RotateAnimation3D;
 import rajawali.materials.Material;
@@ -64,7 +66,7 @@ public class Renderer extends RajawaliRenderer implements
     private boolean mUseFolder;
     private Date mDateLastChange;
     private final Object mLock = new Object();
-    private float mXoffset;
+    private float mXOffset =0.5f;
     private final int REQUIRED_SIZE_WIDTH;
     private final int REQUIRED_SIZE_HEIGHT;
 
@@ -90,7 +92,7 @@ public class Renderer extends RajawaliRenderer implements
         setFrameRate(30);
         Camera2D cam = new Camera2D();
         this.replaceAndSwitchCamera(getCurrentCamera(), cam);
-        getCurrentScene().setBackgroundColor(Color.RED);
+        getCurrentScene().setBackgroundColor(Color.BLACK);
         getCurrentCamera().setLookAt(0, 0, 0);
 
         try {
@@ -149,10 +151,9 @@ public class Renderer extends RajawaliRenderer implements
     }
 
     private void updateBackground(String uri) {
-        loadFile(uri);
-        visibleBackground();
-        initPlane();
-        onOffsetsChanged(mXoffset, 0, 0, 0, 0, 0);
+
+        transitionBackground(uri);
+
     }
 
     private int nextId() {
@@ -213,11 +214,83 @@ public class Renderer extends RajawaliRenderer implements
         b.recycle();
     }
 
-    private void visibleBackground() {
-        mBackground.setVisible(false);
-        mBackgroundGIF.setVisible(false);
-        getBackground().setVisible(true);
+    private void transitionBackground(final String uri) {
+        boolean nextImageUseGIF = false;
+        File file = FileUtils.getFile(Uri.parse(uri.replaceFirst("/",
+                "file:///")));
+        if (file.isFile() && FileUtils.getExtension(uri).equalsIgnoreCase(".gif")) {
+            nextImageUseGIF = true;
+        }
+        transitionBackgroundJPG(uri, nextImageUseGIF);
 
+        transitionBackgroundGIF(uri, nextImageUseGIF);
+    }
+
+    private void transitionBackgroundJPG(final String uri, boolean nextImageUseGIF) {
+        DisappearAnimation transition = new DisappearAnimation() {
+            protected void eventRepeat() {
+                super.eventRepeat();
+                loadFile(uri);
+                mBackground.getTexture().setInfluence(0);
+                mBackground.setVisible(true);
+                initPlane();
+                onOffsetsChanged(mXOffset, 0, 0, 0, 0, 0);
+                mTextureManager.replaceTexture(mBackground.getTexture());
+
+            }
+
+            protected void eventEnd() {
+                super.eventEnd();
+                if (mBackground.getTexture().getInfluence() == 0) {
+                    mBackground.setVisible(false);
+                }
+                unregisterAnimation(this);
+            }
+        };
+        transition.setImage(mBackground);
+        if (nextImageUseGIF) {
+            transition.setRepeatMode(RepeatMode.NONE);
+        } else {
+            transition.setRepeatMode(Animation3D.RepeatMode.REVERSE);
+            transition.setRepeatCount(1);
+        }
+        transition.setDuration(750);
+
+        registerAnimation(transition);
+        transition.play();
+    }
+
+    private void transitionBackgroundGIF(final String uri, boolean nextImageUseGIF) {
+        DisappearAnimation transitionGIF = new DisappearAnimation() {
+            protected void eventRepeat() {
+                super.eventRepeat();
+                loadFile(uri);
+                mBackgroundGIF.getTexture().setInfluence(0);
+                mBackgroundGIF.setVisible(true);
+                initPlane();
+                onOffsetsChanged(mXOffset, 0, 0, 0, 0, 0);
+                mBackgroundGIF.getTexture().setInfluence(0);
+            }
+
+            protected void eventEnd() {
+                super.eventEnd();
+                if (mBackgroundGIF.getTexture().getInfluence() == 0) {
+                    mBackgroundGIF.setVisible(false);
+                }
+                unregisterAnimation(this);
+            }
+        };
+        transitionGIF.setImage(mBackgroundGIF);
+        if (nextImageUseGIF) {
+            transitionGIF.setRepeatMode(RepeatMode.REVERSE);
+            transitionGIF.setRepeatCount(1);
+        } else {
+            transitionGIF.setRepeatMode(RepeatMode.NONE);
+        }
+        transitionGIF.setDuration(750);
+
+        registerAnimation(transitionGIF);
+        transitionGIF.play();
     }
 
     private boolean checkDate() {
@@ -367,7 +440,6 @@ public class Renderer extends RajawaliRenderer implements
                     && mListFiles != null && mListFiles.size() > 0 && mUseFolder
                     && checkDate()) {
                 changedBackground();
-                mTextureManager.replaceTexture(mBackground.getTexture());
             }
         }
     }
@@ -395,6 +467,17 @@ public class Renderer extends RajawaliRenderer implements
 
     @Override
     public void onSurfaceDestroyed() {
+        try {
+            mBackground.surfaceDestroyed();
+            mTextureManager.taskRemove(mBackground.getTexture());
+            mMaterialManager.taskRemove(mBackground.getMaterial());
+
+            mBackgroundGIF.surfaceDestroyed();
+            mTextureManager.taskRemove(mBackgroundGIF.getTexture());
+            mMaterialManager.taskRemove(mBackgroundGIF.getMaterial());
+        } catch (TextureException e) {
+            e.printStackTrace();
+        }
         super.onSurfaceDestroyed();
     }
 
@@ -415,7 +498,7 @@ public class Renderer extends RajawaliRenderer implements
                                  float xOffsetStep, float yOffsetStep, int xPixelOffset,
                                  int yPixelOffset) {
         if (mBackground != null) {
-            mXoffset = xOffset;
+            mXOffset = xOffset;
             getBackground().offsetsChanged(xOffset);
         }
     }
