@@ -11,13 +11,14 @@ import java.util.Random;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import fr.ravenfeld.livewallpaper.library.objects.animation.DisappearAnimation;
+import fr.ravenfeld.livewallpaper.library.objects.Utils;
 import fr.ravenfeld.livewallpaper.slideshow.objects.Background;
 import fr.ravenfeld.livewallpaper.slideshow.objects.BackgroundGIF;
 import fr.ravenfeld.livewallpaper.slideshow.objects.IBackground;
 import rajawali.Camera2D;
+import rajawali.animation.Animation;
 import rajawali.animation.Animation3D;
-import rajawali.animation.Animation3D.RepeatMode;
+import rajawali.animation.DisappearAnimationTexture;
 import rajawali.animation.RotateAnimation3D;
 import rajawali.materials.Material;
 import rajawali.materials.methods.DiffuseMethod;
@@ -26,7 +27,6 @@ import rajawali.materials.textures.Texture;
 import rajawali.math.vector.Vector3;
 import rajawali.primitives.Cube;
 import rajawali.renderer.RajawaliRenderer;
-import rajawali.wallpaper.Wallpaper;
 
 import android.app.WallpaperManager;
 import android.content.Context;
@@ -41,11 +41,9 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 
 import com.ipaulpro.afilechooser.utils.FileUtils;
 
-import fr.ravenfeld.livewallpaper.slideshow.utils.Util;
 
 public class Renderer extends RajawaliRenderer implements
         SharedPreferences.OnSharedPreferenceChangeListener {
-    private final SharedPreferences mSharedPreferences;
 
     private enum ModeRenderer {
         CLASSIC, LETTER_BOXED, STRETCHED
@@ -72,12 +70,7 @@ public class Renderer extends RajawaliRenderer implements
 
     public Renderer(Context context) {
         super(context);
-
-        mSharedPreferences = context.getSharedPreferences(
-                Wallpaper.SHARED_PREFS_NAME, 0);
-        mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
         mListFiles = new ArrayList<String>();
-        updateTime();
         mDateLastChange = new Date();
         WallpaperManager wallpaperManager = WallpaperManager
                 .getInstance(mContext);
@@ -85,6 +78,13 @@ public class Renderer extends RajawaliRenderer implements
                 .getDesiredMinimumWidth();
         REQUIRED_SIZE_HEIGHT = wallpaperManager
                 .getDesiredMinimumHeight();
+    }
+
+    @Override
+    public void setSharedPreferences(SharedPreferences preferences) {
+        super.setSharedPreferences(preferences);
+        preferences.registerOnSharedPreferenceChangeListener(this);
+        updateTime();
     }
 
     @Override
@@ -109,7 +109,7 @@ public class Renderer extends RajawaliRenderer implements
     }
 
     private void initBackground() {
-        String uri = mSharedPreferences.getString("uri", "");
+        String uri = preferences.getString("uri", "");
         if (!uri.equalsIgnoreCase("")) {
             File file = FileUtils.getFile(Uri.parse(uri));
             if (file.isDirectory()) {
@@ -138,7 +138,7 @@ public class Renderer extends RajawaliRenderer implements
 
     private void changedBackground() {
         synchronized (mLock) {
-            boolean random = mSharedPreferences
+            boolean random = preferences
                     .getBoolean("random_file", false);
             String uri;
             if (random) {
@@ -188,7 +188,7 @@ public class Renderer extends RajawaliRenderer implements
             } else {
                 mUseGIF = false;
                 try {
-                    Bitmap b = Util.decodeUri(mContext,
+                    Bitmap b = Utils.decodeUri(mContext,
                             Uri.parse("file:///" + file.getPath()));
                     mBackground.setWidthBitmap(b.getWidth());
                     mBackground.setHeightBitmap(b.getHeight());
@@ -227,7 +227,7 @@ public class Renderer extends RajawaliRenderer implements
     }
 
     private void transitionBackgroundJPG(final String uri, boolean nextImageUseGIF) {
-        DisappearAnimation transition = new DisappearAnimation() {
+        DisappearAnimationTexture transition = new DisappearAnimationTexture() {
             protected void eventRepeat() {
                 super.eventRepeat();
                 loadFile(uri);
@@ -247,9 +247,9 @@ public class Renderer extends RajawaliRenderer implements
                 unregisterAnimation(this);
             }
         };
-        transition.setImage(mBackground);
+        transition.setTexture(mBackground.getTexture());
         if (nextImageUseGIF) {
-            transition.setRepeatMode(RepeatMode.NONE);
+            transition.setRepeatMode(Animation.RepeatMode.NONE);
         } else {
             transition.setRepeatMode(Animation3D.RepeatMode.REVERSE);
             transition.setRepeatCount(1);
@@ -261,7 +261,7 @@ public class Renderer extends RajawaliRenderer implements
     }
 
     private void transitionBackgroundGIF(final String uri, boolean nextImageUseGIF) {
-        DisappearAnimation transitionGIF = new DisappearAnimation() {
+        DisappearAnimationTexture transitionGIF = new DisappearAnimationTexture() {
             protected void eventRepeat() {
                 super.eventRepeat();
                 loadFile(uri);
@@ -280,12 +280,12 @@ public class Renderer extends RajawaliRenderer implements
                 unregisterAnimation(this);
             }
         };
-        transitionGIF.setImage(mBackgroundGIF);
+        transitionGIF.setTexture(mBackgroundGIF.getTexture());
         if (nextImageUseGIF) {
-            transitionGIF.setRepeatMode(RepeatMode.REVERSE);
+            transitionGIF.setRepeatMode(Animation.RepeatMode.REVERSE);
             transitionGIF.setRepeatCount(1);
         } else {
-            transitionGIF.setRepeatMode(RepeatMode.NONE);
+            transitionGIF.setRepeatMode(Animation.RepeatMode.NONE);
         }
         transitionGIF.setDuration(750);
 
@@ -338,7 +338,7 @@ public class Renderer extends RajawaliRenderer implements
     }
 
     private void updateTime() {
-        String timePref = mSharedPreferences
+        String timePref = preferences
                 .getString("time", "time_5_minutes");
         if (timePref.equalsIgnoreCase("time_5_seconds")) {
             mTimePref = TimePref.TIME_5_SECONDS;
@@ -360,7 +360,7 @@ public class Renderer extends RajawaliRenderer implements
     }
 
     private void initPlane() {
-        String renderer = mSharedPreferences.getString("rendererMode",
+        String renderer = preferences.getString("rendererMode",
                 "classic");
         if (renderer.equalsIgnoreCase("letter_boxed")) {
             rendererMode(ModeRenderer.LETTER_BOXED);
@@ -527,33 +527,6 @@ public class Renderer extends RajawaliRenderer implements
             return mBackgroundGIF;
         } else {
             return mBackground;
-        }
-    }
-
-    private void initTest() {
-        try {
-            Cube cube = new Cube(0.1f);
-            Material material = new Material();
-            material.enableLighting(true);
-            material.setDiffuseMethod(new DiffuseMethod.Lambert());
-            material.addTexture(new Texture("rajawaliTex",
-                    R.drawable.rajawali_tex));
-            material.setColorInfluence(0);
-            cube.setMaterial(material);
-            addChild(cube);
-
-            Vector3 axis = new Vector3(3, 1, 6);
-            axis.normalize();
-            RotateAnimation3D anim = new RotateAnimation3D(axis, 360);
-            anim.setDuration(8000);
-            anim.setRepeatMode(RepeatMode.INFINITE);
-            anim.setInterpolator(new AccelerateDecelerateInterpolator());
-            anim.setTransformable3D(cube);
-            registerAnimation(anim);
-            anim.play();
-
-        } catch (TextureException e) {
-            e.printStackTrace();
         }
     }
 
