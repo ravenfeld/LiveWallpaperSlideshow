@@ -84,7 +84,6 @@ public class Renderer extends RajawaliRenderer implements
     public void setSharedPreferences(SharedPreferences preferences) {
         super.setSharedPreferences(preferences);
         preferences.registerOnSharedPreferenceChangeListener(this);
-        updateTime();
     }
 
     @Override
@@ -105,7 +104,7 @@ public class Renderer extends RajawaliRenderer implements
         initBackground();
         addChild(mBackground.getObject3D());
         addChild(mBackgroundGIF.getObject3D());
-        //initTest();
+        updateTime();
     }
 
     private void initBackground() {
