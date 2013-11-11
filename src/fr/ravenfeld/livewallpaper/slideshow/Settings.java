@@ -27,7 +27,7 @@ public class Settings extends PreferenceActivity implements SharedPreferences.On
 		INCLUDE_EXTENSIONS_LIST.add(".gif");
 		INCLUDE_EXTENSIONS_LIST.add(".JPG");
 		INCLUDE_EXTENSIONS_LIST.add(".PNG");
-		INCLUDE_EXTENSIONS_LIST.add(".GIF");
+		//INCLUDE_EXTENSIONS_LIST.add(".GIF");
 	}
 	private Preference mFile;
 	private ListPreference mRendererMode;

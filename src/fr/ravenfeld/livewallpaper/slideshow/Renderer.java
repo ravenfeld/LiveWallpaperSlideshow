@@ -12,6 +12,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import fr.ravenfeld.livewallpaper.library.objects.Utils;
+import fr.ravenfeld.livewallpaper.library.objects.simple.BackgroundFixed;
 import fr.ravenfeld.livewallpaper.slideshow.objects.Background;
 import fr.ravenfeld.livewallpaper.slideshow.objects.BackgroundGIF;
 import fr.ravenfeld.livewallpaper.slideshow.objects.IBackground;
@@ -35,7 +36,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.animation.AccelerateDecelerateInterpolator;
 
@@ -91,20 +91,21 @@ public class Renderer extends RajawaliRenderer implements
         setFrameRate(30);
         Camera2D cam = new Camera2D();
         this.replaceAndSwitchCamera(getCurrentCamera(), cam);
-        getCurrentScene().setBackgroundColor(Color.BLACK);
+        getCurrentScene().setBackgroundColor(Color.GREEN);
         getCurrentCamera().setLookAt(0, 0, 0);
 
         try {
             mBackground = new Background("bg", R.drawable.rajawali_tex);
             loadResourceDefault(R.drawable.bg);
-            mBackgroundGIF = new BackgroundGIF("bg", R.drawable.bob);
+            //mBackgroundGIF = new BackgroundGIF("bg", R.drawable.bob);
         } catch (TextureException e) {
             e.printStackTrace();
         }
         initBackground();
         addChild(mBackground.getObject3D());
-        addChild(mBackgroundGIF.getObject3D());
+        //addChild(mBackgroundGIF.getObject3D());
         updateTime();
+
     }
 
     private void initBackground() {
@@ -172,7 +173,6 @@ public class Renderer extends RajawaliRenderer implements
         File file = FileUtils.getFile(Uri.parse(uri.replaceFirst("/",
                 "file:///")));
         if (file.isFile()) {
-            Log.e("TEST", "FILE " + uri);
 
             if (FileUtils.getExtension(uri).equalsIgnoreCase(".gif")) {
                 mUseGIF = true;
@@ -181,7 +181,6 @@ public class Renderer extends RajawaliRenderer implements
                     mBackgroundGIF.updateTexture(uri);
 
                 } catch (TextureException e) {
-                    Log.e("TEST", "TEXTURE EXCEPTION");
                     e.printStackTrace();
                 }
             } else {
@@ -194,7 +193,6 @@ public class Renderer extends RajawaliRenderer implements
                     mBackground.setTexture(Bitmap.createScaledBitmap(b, REQUIRED_SIZE_WIDTH, REQUIRED_SIZE_HEIGHT, true));
                     b.recycle();
                 } catch (FileNotFoundException e) {
-                    Log.e("TEST", "FILE NOT FOUND");
                     e.printStackTrace();
                 }
             }
@@ -209,6 +207,8 @@ public class Renderer extends RajawaliRenderer implements
         mUseGIF = false;
         Bitmap b = BitmapFactory.decodeResource(mContext.getResources(),
                 resourceId);
+        mBackground.setWidthBitmap(b.getWidth());
+        mBackground.setHeightBitmap(b.getHeight());
         mBackground.setTexture(Bitmap.createScaledBitmap(b, REQUIRED_SIZE_WIDTH, REQUIRED_SIZE_HEIGHT, true));
         b.recycle();
     }
@@ -427,7 +427,8 @@ public class Renderer extends RajawaliRenderer implements
         synchronized (mLock) {
 
             super.onDrawFrame(glUnused);
-            if (mBackgroundGIF != null) {
+
+             if (mBackgroundGIF != null) {
                 try {
                     mBackgroundGIF.update();
                 } catch (TextureException e) {
@@ -435,7 +436,7 @@ public class Renderer extends RajawaliRenderer implements
                     e.printStackTrace();
                 }
             }
-            if (mBackground != null
+            if (mBackground != null &&mBackgroundGIF != null
                     && mListFiles != null && mListFiles.size() > 0 && mUseFolder
                     && checkDate()) {
                 changedBackground();
@@ -462,22 +463,34 @@ public class Renderer extends RajawaliRenderer implements
     @Override
     public void onVisibilityChanged(boolean visible) {
         super.onVisibilityChanged(visible);
+        if(mBackgroundGIF != null){
+            if(visible){
+                mBackgroundGIF.animate();
+            }else{
+                mBackgroundGIF.stopAnimation();
+            }
+        }
     }
 
     @Override
     public void onSurfaceDestroyed() {
+        synchronized (mLock) {
         try {
+            if(mBackground!= null){
             mBackground.surfaceDestroyed();
             mTextureManager.taskRemove(mBackground.getTexture());
             mMaterialManager.taskRemove(mBackground.getMaterial());
-
+            }
+            if(mBackgroundGIF != null){
             mBackgroundGIF.surfaceDestroyed();
             mTextureManager.taskRemove(mBackgroundGIF.getTexture());
             mMaterialManager.taskRemove(mBackgroundGIF.getMaterial());
+            }
         } catch (TextureException e) {
             e.printStackTrace();
         }
         super.onSurfaceDestroyed();
+        }
     }
 
     @Override
